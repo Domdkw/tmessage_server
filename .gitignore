@@ -1,0 +1,11 @@
+# 忽略所有 .db 文件
+*.db
+# 忽略所有 .log 文件
+*.log
+#npm 忽略 node_modules 目录
+node_modules
+
+.env
+.env.test
+.env.development
+.local
