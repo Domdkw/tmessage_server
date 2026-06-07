@@ -32,9 +32,9 @@ teacher.post('/:teacherId/refresh', async(c) => {
     return c.json(result)
 })
 
-classroom.post('/get-bind-token/:classroomId', async(c) => {
+classroom.post('/:classroomId/get_bind_token', async(c) => {
     const classroomId = c.req.param('classroomId')
-    const result = await Bind.generateClassroomToken(classroomId)
+    const result = await Bind.generateClassroomToken(classroomId!)
     return c.json(result)
 })
 
@@ -49,5 +49,18 @@ teacher.post('/:teacherId/bind', async(c) => {
     })
     return c.json(result)
 })
+
+teacher.post('/:teacherId/unbind', async(c) => {
+    const teacherId = c.req.param('teacherId')
+    const q = await c.req.json<{c: string, t: string}>()
+    const result = await Bind.teacherUnbind({
+        teacherId: teacherId!,//写入
+        classroomId: q.c,//写入
+        teacherToken: q.t,//验证
+    })
+    return c.json(result)
+})
+
+
 
 Deno.serve(app.fetch)

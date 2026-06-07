@@ -15,9 +15,9 @@ const Login = {
             return Utils.RJson({}, 400, 'Login failed', false);
         }
 
-        const userData = JSON.parse(user)
+        const userAccount = JSON.parse(user)
 
-        if (userData.password !== password || userData.username !== username) {
+        if (userAccount.password !== password || userAccount.username !== username) {
             return Utils.RJson({}, 400, 'Login failed', false);
         }
 

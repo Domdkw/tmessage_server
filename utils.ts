@@ -12,7 +12,7 @@ const Utils = {
         return res;
     },
     generateToken() {
-        const token = Array.from({ length: 8 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+        const token = Array.from({ length: 16 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
         return token;
     }
 }
