@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 
-import Login from './login.ts'
-import Bind from './bind.ts'
+import Login from './src/login.ts'
+import Bind from './src/bind.ts'
 
 
 const app = new Hono();

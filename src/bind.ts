@@ -1,5 +1,6 @@
 import KvCache, { CACHE_TTL } from './kv_cache.ts'
 import Utils from './utils.ts'
+import User from './user.ts'
 
 
 const Bind = {
@@ -20,7 +21,7 @@ const Bind = {
         }
         
         //检查token
-        if (!await this._checkTeacherToken(teacherId,teacherToken))
+        if (!await User.checkTeacherToken(teacherId,teacherToken))
             return Utils.RJson({e:'tb2'}, 400, 'Teacher token failed', false)
 
         // 检查班级bind临时token
@@ -31,7 +32,10 @@ const Bind = {
             return Utils.RJson({e:'tb3'}, 400, 'Classroom token failed', false);
         }
 
-        const account = await this._getTeacherUserAccount(teacherId)
+        const account = await User.getUserAccount(teacherId)
+        if (!account) {
+            return Utils.RJson({e:'tb4'}, 404, 'UD not found', false);
+        }
 
         account.userData ??= {};//如果存在
         account.userData.bindClassroom ??= [];
@@ -61,10 +65,10 @@ const Bind = {
         }
 
         //检查token
-        if (!await this._checkTeacherToken(teacherId,teacherToken))
+        if (!await User.checkTeacherToken(teacherId,teacherToken))
             return Utils.RJson({e:'tub2'}, 400, 'Teacher token failed', false)
 
-        const account = await this._getTeacherUserAccount(teacherId);
+        const account = await User.getUserAccount(teacherId);
         if (!account.userData.bindClassroom || !account.userData.bindClassroom.includes(classroomId)) {
             return Utils.RJson({e:'tub3'}, 400, 'Classroom not bound', false);
         }
@@ -85,22 +89,5 @@ const Bind = {
         });
     },
 
-    async _getTeacherUserAccount(teacherId: string) {
-        //读取
-        const user = await KvCache.get<string>({prefix: 'ud_', key: teacherId})
-        if (!user) {
-            return Utils.RJson({e:'gtud1'}, 404, 'UD not found', false);
-        }
-        const userAccount = JSON.parse(user)
-        return userAccount
-    },
-    async _checkTeacherToken(teacherId: string, teacherToken: string){
-        // 检查老师token
-        const cacheTeacherValue = await KvCache.get({prefix: 'lr_', key: teacherId})
-        if (!!cacheTeacherValue && cacheTeacherValue === teacherToken) {
-            return true;
-        }
-        return false;
-    },
 }
 export default Bind

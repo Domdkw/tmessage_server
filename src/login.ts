@@ -1,5 +1,6 @@
 import Utils from './utils.ts'
 import KvCache from './kv_cache.ts'
+import User from './user.ts'
 
 const REFRESH_TTL = 60*24*60*60*1000 //60天
 
@@ -9,17 +10,17 @@ const Login = {
             return Utils.RJson({}, 400, 'Login failed', false);
         }
 
-        const user = await KvCache.get<string>({prefix: 'ud_', key: userid})
+        const account = await User.getUserAccount(userid)
         
-        if (!user) {
+        if (!account) {
             return Utils.RJson({}, 400, 'Login failed', false);
         }
 
-        const userAccount = JSON.parse(user)
-
-        if (userAccount.password !== password || userAccount.username !== username) {
+        if (account.password !== password || account.username !== username) {
             return Utils.RJson({}, 400, 'Login failed', false);
         }
+
+        const userData = account.userData ?? {}
 
         // 生成新token
         const newToken = await this._setNewToken(userid)
@@ -27,7 +28,7 @@ const Login = {
             return Utils.RJson({}, 500, 'Error _setNewToken', false)
         }
         
-        return Utils.RJson({token: newToken, refresh_ttl: REFRESH_TTL}, 200, 'Login success', true);
+        return Utils.RJson({token: newToken, refresh_ttl: REFRESH_TTL, userData: userData}, 200, 'Login success', true);
     },
 
     async refresh( {userid, token}: {userid: string, token: string}){

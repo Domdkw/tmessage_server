@@ -9,3 +9,7 @@ node_modules
 .env.test
 .env.development
 .local
+
+# 忽略包含 tms 的文件
+*tms*
+*tms*.*
