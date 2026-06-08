@@ -1,4 +1,4 @@
-import KvCache, { CACHE_TTL } from './kv_cache.ts'
+import KvCache from './kv_cache.ts'
 import Utils from './utils.ts'
 import User from './user.ts'
 
@@ -7,19 +7,16 @@ const Bind = {
     async generateClassroomToken(classroomId: string) {
         const token = Utils.generateToken();
         return await KvCache.set(
-            {prefix: 'gct_', key: classroomId, value: {token, channel: 'classroom_bind'}},
-        () => { // 成功回调
-            return Utils.RJson({token,  ttl: CACHE_TTL}, 200, 'gct: kv.set', true)
+            {prefix: 'gct_', key: classroomId, value: {token, channel: 'classroom_bind'}, ttl: 300000},
+            //ttl 5分钟
+            () => { // 成功回调
+            return Utils.RJson({token,  ttl: 300000}, 200, 'gct: kv.set', true)
         }, (err) => {
             return Utils.RJson({}, 500, err.message, false);
         });
     },
 
-    async teacherBind({teacherId, teacherToken, classroomId, classroomToken}: {teacherId: string, teacherToken: string, classroomId: string, classroomToken: string}) {
-        if (!teacherId || !teacherToken || !classroomId || !classroomToken) {
-            return Utils.RJson({e:'tb1'}, 400, 'Request failed', false);
-        }
-        
+    async teacherBind({teacherId, teacherToken, classroomId, classroomToken}: {teacherId: string, teacherToken: string, classroomId: string, classroomToken: string}) {        
         //检查token
         if (!await User.checkTeacherToken(teacherId,teacherToken))
             return Utils.RJson({e:'tb2'}, 400, 'Teacher token failed', false)
@@ -60,10 +57,6 @@ const Bind = {
     },
 
     async teacherUnbind({teacherId, classroomId, teacherToken}: {teacherId: string, classroomId: string, teacherToken: string}) {
-        if (!teacherId || !classroomId || !teacherToken) {
-            return Utils.RJson({e:'tub1'}, 400, 'Request failed', false);
-        }
-
         //检查token
         if (!await User.checkTeacherToken(teacherId,teacherToken))
             return Utils.RJson({e:'tub2'}, 400, 'Teacher token failed', false)
@@ -75,14 +68,16 @@ const Bind = {
         
         account.userData ??= {};//如果存在
         account.userData.bindClassroom ??= [];
+
+        // 解绑班级
+        account.userData.bindClassroom = account.userData.bindClassroom.filter((item: string) => item !== classroomId);
         
         // 写入
         return await KvCache.set(
             {prefix: 'ud_', key: teacherId, value: JSON.stringify(account)},
         () => { // 成功回调
             return Utils.RJson({
-                classroomId,
-                bindClassroom: account.userData.bindClassroom,
+                classroomId
             }, 200, 'Action success', true)
         }, (err) => {
             return Utils.RJson({}, 500, err.message, false);

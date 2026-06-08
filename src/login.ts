@@ -6,10 +6,6 @@ const REFRESH_TTL = 60*24*60*60*1000 //60天
 
 const Login = {
     async teacher( {userid, username, password}: {userid: string, username: string, password: string}){
-        if (!username || !password || !userid) {
-            return Utils.RJson({}, 400, 'Login failed', false);
-        }
-
         const account = await User.getUserAccount(userid)
         
         if (!account) {
@@ -32,10 +28,6 @@ const Login = {
     },
 
     async refresh( {userid, token}: {userid: string, token: string}){
-        if (!token || !userid) {
-            return Utils.RJson({}, 400, 'Refresh failed', false);
-        }
-
         // 检查token是否有效
         const cachedToken = await KvCache.get<string>({prefix: 'lr_', key: userid})
         if (!cachedToken || cachedToken !== token) {
