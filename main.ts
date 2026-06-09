@@ -3,7 +3,7 @@ import { Hono } from 'hono'
 import Login from './src/login.ts'
 import Bind from './src/bind.ts'
 import Utils from './src/utils.ts'
-import { wsRouter } from './src/ws.ts'
+import { wsRouter } from './src/message.ts'
 
 
 const app = new Hono();
